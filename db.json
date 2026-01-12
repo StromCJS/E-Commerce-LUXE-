@@ -1,0 +1,14 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Premium Dress Shirt",
+      "price": 199,
+      "category": "shirt",
+      "collection": "new",
+      "size": "regular",
+      "image": "https://picsum.photos/seed/shirt1/400/500"
+    }
+  ],
+  "orders": []
+}
