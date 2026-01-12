@@ -38,6 +38,8 @@ interface Hotspot {
 
 export function OutfitShowcase() {
   const [activeHotspot, setActiveHotspot] = useState<Hotspot | null>(null);
+  const [checkoutAmount, setCheckoutAmount] = useState<number>(0);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const settings = {
     dots: true,
@@ -92,7 +94,14 @@ export function OutfitShowcase() {
                     with modern sophistication. Each piece is selected to
                     complement the others perfectly.
                   </p>
-                  <button className="px-8 py-3 bg-[#d4af37] text-[#0a0a0a] hover:bg-white hover:text-[#d4af37] transition-all duration-300">
+                  <button
+                    className="px-8 py-3 bg-[#d4af37] text-[#0a0a0a] hover:bg-white hover:text-[#d4af37] transition-all duration-300"
+                    onClick={() => {
+                      const total = outfit.hotspots.reduce((sum, h) => sum + parseFloat(h.price.replace('$', '').replace(',', '')), 0);
+                      setCheckoutAmount(total);
+                      setIsCheckoutOpen(true);
+                    }}
+                  >
                     Shop Full Set
                   </button>
                 </div>
@@ -125,16 +134,31 @@ export function OutfitShowcase() {
               >
                 <X size={24} />
               </button>
-              
+
               <h3 className="text-2xl mb-4 text-white">{activeHotspot.item}</h3>
               <p className="text-3xl mb-6 text-[#d4af37]">{activeHotspot.price}</p>
-              <button className="w-full py-3 bg-[#d4af37] text-[#0a0a0a] hover:bg-white hover:text-[#d4af37] transition-all duration-300">
+              <button
+                className="w-full py-3 bg-[#d4af37] text-[#0a0a0a] hover:bg-white hover:text-[#d4af37] transition-all duration-300"
+                onClick={() => {
+                  const price = parseFloat(activeHotspot.price.replace('$', '').replace(',', ''));
+                  setCheckoutAmount(price);
+                  setIsCheckoutOpen(true);
+                  setActiveHotspot(null);
+                }}
+              >
                 Add to Cart
               </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Stripe Checkout */}
+      <StripeCheckout
+        amount={checkoutAmount}
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+      />
     </section>
   );
 }
