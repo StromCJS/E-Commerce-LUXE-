@@ -1,0 +1,3 @@
+- [x] Modify itemsPerPage to be 20 when a specific category is selected, 24 otherwise
+- [x] Disable pagination when a specific category is selected
+- [x] Add animation key to grid items to re-animate on category change

@@ -1,18 +1,45 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion } from "motion/react";
 import { ShoppingCart, Heart, Eye, Sparkles } from "lucide-react";
-import { products, Product } from "../data/products";
-import { StripeCheckout } from "./StripeCheckout";
+import { useCart } from "../context/CartContext";
+
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  collection: string;
+  size: string;
+  image: string;
+  badge?: string;
+}
 
 export function ProductGrid() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<Product['category'] | 'all'>('all');
   const [selectedCollection, setSelectedCollection] = useState<'all' | 'new' | 'old'>('all');
   const [selectedSize, setSelectedSize] = useState<'all' | 'kids' | 'regular' | 'big'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
-  const [checkoutAmount, setCheckoutAmount] = useState<number | null>(null);
-  const itemsPerPage = 24;
+  const { addToCart } = useCart();
+  const itemsPerPage = selectedCategory === 'all' ? 24 : 20;
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/products')
+      .then(res => res.json())
+      .then(data => {
+        setProducts(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError('Failed to load products');
+        setLoading(false);
+        console.error('Error fetching products:', err);
+      });
+  }, []);
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -21,7 +48,7 @@ export function ProductGrid() {
       const sizeMatch = selectedSize === 'all' || product.size === selectedSize;
       return categoryMatch && collectionMatch && sizeMatch;
     });
-  }, [selectedCategory, selectedCollection, selectedSize]);
+  }, [products, selectedCategory, selectedCollection, selectedSize]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -39,24 +66,46 @@ export function ProductGrid() {
     });
   };
 
+  if (loading) {
+    return (
+      <section className="py-24 px-6 bg-[#0a0a0a] min-h-screen flex items-center justify-center">
+        <div className="text-white text-xl">Loading products...</div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-24 px-6 bg-[#0a0a0a] min-h-screen flex items-center justify-center">
+        <div className="text-red-400 text-xl">Error: {error}</div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-24 px-6 bg-[#0a0a0a] min-h-screen">
-      <div className="max-w-[1800px] mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-5xl mb-4 text-white tracking-wider"
-          >
-            Our Collection
-          </motion.h2>
-          <p className="text-white/70 text-lg">
-            {filteredProducts.length} Premium Products
-          </p>
-        </div>
+      {/* Centered Header */}
+      <div className="text-center mb-16">
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-5xl md:text-6xl mb-4 text-white tracking-wider"
+        >
+          Our Collection
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+          className="text-white/70 text-lg"
+        >
+          {filteredProducts.length} Premium Products
+        </motion.p>
+      </div>
 
+      <div className="max-w-[1800px] mx-auto">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar */}
           <motion.div
@@ -145,14 +194,13 @@ export function ProductGrid() {
 
           {/* Products Grid */}
           <div className="flex-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {displayedProducts.map((product, index) => (
                 <motion.div
-                  key={product.id}
+                  key={`${product.id}-${selectedCategory}`}
                   initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05, duration: 0.5 }}
                   className="relative bg-[#1a1a1a] overflow-hidden group"
                   onMouseEnter={() => setHoveredId(product.id)}
                   onMouseLeave={() => setHoveredId(null)}
@@ -222,7 +270,7 @@ export function ProductGrid() {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => setCheckoutAmount(product.price)}
+                      onClick={() => addToCart(product)}
                       className="relative w-full py-3 bg-[#d4af37] text-[#0a0a0a] overflow-hidden group"
                     >
                       <motion.div
@@ -242,7 +290,7 @@ export function ProductGrid() {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {totalPages > 1 && selectedCategory === 'all' && (
               <div className="flex justify-center items-center gap-2 mt-12">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -299,13 +347,6 @@ export function ProductGrid() {
           </div>
         </div>
       </div>
-
-      {/* Stripe Checkout Modal */}
-      <StripeCheckout
-        amount={checkoutAmount || 0}
-        isOpen={checkoutAmount !== null}
-        onClose={() => setCheckoutAmount(null)}
-      />
     </section>
   );
 }

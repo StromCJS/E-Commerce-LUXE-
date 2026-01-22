@@ -1,9 +1,10 @@
 import { loadStripe } from "@stripe/stripe-js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { X } from "lucide-react";
+import { X, CheckCircle2 } from "lucide-react";
+import { useCart } from "../context/CartContext";
 
-const stripePromise = loadStripe("pk_test_51Qd8wJGJzQ8xJcZv8wJ8wJ8w"); // Replace with your Stripe publishable key
+const stripePromise = loadStripe("pk_test_TYooMQauvdEDq54NiTphI7jx"); // Sample Public Key
 
 interface CheckoutFormProps {
   amount: number;
@@ -12,25 +13,25 @@ interface CheckoutFormProps {
 
 function CheckoutForm({ amount, onClose }: CheckoutFormProps) {
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const { cart, clearCart } = useCart();
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
 
-    // Redirect to Stripe Checkout (using client-side checkout)
-    const stripe = await stripePromise;
-    if (stripe) {
-      const { error } = await (stripe as any).redirectToCheckout({
-        lineItems: [{ price: "price_1Qd8wJGJzQ8xJcZv8wJ8wJ8w", quantity: 1 }], // Example test price ID
-        mode: "payment",
-        successUrl: window.location.origin + "/success",
-        cancelUrl: window.location.origin,
-      });
-      if (error) {
-        console.error(error);
-      }
-    }
-    setLoading(false);
+    // For now, just simulate payment success
+    setTimeout(() => {
+      // Payment succeeded, create order
+      fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, status: 'paid' }),
+      })
+        .then(() => onClose())
+        .catch(err => console.error('Error creating order:', err));
+      setLoading(false);
+    }, 2000);
   };
 
   return (

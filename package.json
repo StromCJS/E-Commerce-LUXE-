@@ -4,8 +4,9 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "dev": "vite",
+    "build": "cd frontend && vite build",
+    "dev": "cd frontend && vite",
+    "server": "node server.js",
     "api": "json-server --watch db.json --port 3001"
   },
   "dependencies": {
@@ -45,8 +46,11 @@
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
+    "cors": "^2.8.5",
     "date-fns": "3.6.0",
+    "dotenv": "^17.2.3",
     "embla-carousel-react": "8.6.0",
+    "express": "^5.2.1",
     "input-otp": "1.4.2",
     "json-server": "^1.0.0-beta.3",
     "lucide-react": "0.487.0",
@@ -63,6 +67,7 @@
     "recharts": "2.15.2",
     "slick-carousel": "^1.8.1",
     "sonner": "2.0.3",
+    "stripe": "^20.1.2",
     "tailwind-merge": "3.2.0",
     "tw-animate-css": "1.3.8",
     "vaul": "1.1.2"

@@ -74,13 +74,14 @@ export function OutfitShowcase() {
                     className="w-full h-full object-cover"
                   />
                   
-                  {/* Hotspots */}
+                  {/* Hotspots - Hidden dots, click on image areas */}
                   {outfit.hotspots.map((hotspot, index) => (
                     <button
                       key={index}
-                      className="absolute w-8 h-8 bg-[#d4af37] rounded-full cursor-pointer hover:scale-125 transition-transform duration-300 group-hover:opacity-100 opacity-70"
+                      className="absolute w-8 h-8 rounded-full cursor-pointer hover:scale-125 transition-transform duration-300 opacity-0 hover:opacity-20 hover:bg-[#d4af37]"
                       style={{ left: hotspot.x, top: hotspot.y }}
                       onClick={() => setActiveHotspot(hotspot)}
+                      aria-label={`View ${hotspot.item}`}
                     >
                     </button>
                   ))}
