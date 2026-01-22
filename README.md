@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
   # Elegant E-commerce Landing Page
 
@@ -9,3 +10,6 @@
 
   Run `npm run dev` to start the development server.
   
+=======
+# E-Commerce-LUXE-
+>>>>>>> a5888992a5dd08dd6e1832386253ea7024523630
